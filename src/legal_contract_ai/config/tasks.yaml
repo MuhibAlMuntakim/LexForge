@@ -1,0 +1,51 @@
+analyze_structure_task:
+  description: >
+    Analyze the extracted clauses: {extracted_clauses}.
+    Validate the presence of core clauses: termination, renewal, liability, indemnity, 
+    confidentiality, data ownership, payment terms, and governing law.
+    Ensure that any gaps (null values) are explicitly noted.
+  expected_output: >
+    A verified structure of the contract's key clauses, accurately identifying what is present and what is missing.
+  agent: structure_analyst
+
+explain_risks_task:
+  description: >
+    You are provided with a list of deterministic risks and violations found by the rule engine: 
+    Violations: {deterministic_violations}
+    Risks: {playbook_rules}
+    
+    Your ONLY job is to provide a business-friendly explanation for WHY these specific items are flagged.
+    
+    CRITICAL: Do NOT perform your own risk assessment. 
+    CRITICAL: Do NOT flag any clause that is not already in the {deterministic_violations} list.
+    If {deterministic_violations} is empty, simply state that no playbook violations were identified.
+  expected_output: >
+    A focused list of justifications for the provided deterministic risks.
+  agent: risk_analyst
+
+generate_summary_task:
+  description: >
+    Produce a 2-paragraph "Executive Summary" based ONLY on the deterministic findings: {deterministic_violations}.
+    Paragraph 1: Factual overview of the contract's nature based on {extracted_clauses}.
+    Paragraph 2: Clear "Bottom Line" focusing ONLY on the confirmed violations provided.
+    Avoid generic commentary or suggesting new risks like '3-year survival' or 'mutual indemnity' unless they are in the {deterministic_violations}.
+  expected_output: >
+    A concise, factual executive summary in plain English.
+  agent: plain_english_translator
+
+suggest_redlines_task:
+  description: >
+    Draft suggested redlines ONLY for the items in {deterministic_violations}.
+    
+    For each item in {deterministic_violations}:
+    - original_clause: [Exact Text from Contract OR "Not present in contract."]
+    - suggested_clause: [Drafted replacement or standard template from 'suggested_fix' in the violation]
+    - reason: [Explanation of why this change aligns with the playbook rule]
+    
+    CRITICAL: You are an editor and ghostwriter. You do NOT decide what is a violation. 
+    CRITICAL: If a clause is not in {deterministic_violations}, it is COMPLIANT and you MUST NOT suggest a redline for it.
+    
+    Your final output MUST be a JSON object with a single key "suggestions" containing the list.
+  expected_output: >
+    A structured list of redline suggestions tied strictly to deterministic violations.
+  agent: negotiation_advisor

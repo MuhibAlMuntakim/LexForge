@@ -1,0 +1,15 @@
+crewai
+crewai-tools
+fastapi
+uvicorn
+streamlit
+groq
+chromadb
+pypdf
+python-docx
+pydantic
+python-dotenv
+tiktoken
+langchain-community
+sentence-transformers
+litellm

@@ -1,0 +1,47 @@
+analyze_structure_task:
+  description: >
+    Analyze the structural classification: {structured_classification}.
+    Cross-reference with the raw extracted text: {extracted_clauses}.
+    Validate that the classification accurately reflects the contract text.
+    Ensure any structural gaps are noted.
+  expected_output: >
+    A verified structural analysis of the contract.
+  agent: compliance_auditor
+
+explain_risks_task:
+  description: >
+    Provide business-friendly explanations for the following playbook violations:
+    Violations: {violations}
+    
+    CRITICAL: Do NOT perform your own risk assessment. 
+    CRITICAL: Do NOT flag any clause that is not already in the {violations} list.
+  expected_output: >
+    Factual explanations for the provided deterministic violations.
+  agent: risk_analyst
+
+generate_summary_task:
+  description: >
+    Produce a concise executive summary based on the findings: {violations}.
+    Summarize the overall risk level and the nature of the contract.
+  expected_output: >
+    A professional executive summary.
+  agent: plain_english_translator
+
+suggest_redlines_task:
+  description: >
+    Draft suggested redlines ONLY for the items in {violations} that have a 'playbook_template'.
+    
+    For each item in {violations}:
+    - violation: [Clause Name]
+    - original_clause: [Exact Text from {extracted_clauses} OR "Not present in contract"]
+    - suggested_redline: [Draft based on 'playbook_template'. If no template exists, do NOT suggest a redline]
+    - rationale: [Explanation of the change]
+    
+    CRITICAL: Modify only minimally to align with the contract structure.
+    CRITICAL: Never introduce obligations not present in the playbook.
+    CRITICAL: Keep suggested clauses concise and legally standard.
+    
+    Your final output MUST be a JSON object with a single key "suggestions" containing the list.
+  expected_output: >
+    A structured list of redline suggestions tied strictly to playbook violations with templates.
+  agent: negotiation_advisor
