@@ -1,72 +1,89 @@
-# LexForge: AI-Powered Legal Contract Review
+# Lexforge: Institutional Legal Operations Hub
 
-LexForge is a high-performance, deterministic AI system designed for automated legal contract review, risk discovery, and redlining. It combines a **Hybrid Deterministic + Agentic** architecture to ensure legal accuracy while leveraging the reasoning capabilities of Large Language Models.
+Lexforge is a high-fidelity, deterministic AI system designed for automated legal contract review, risk discovery, and redlining. It combines a **Hybrid Deterministic + Agentic** architecture to ensure legal accuracy while leveraging the reasoning capabilities of Large Language Models, all wrapped in a premium **Institutional Trust** design system.
 
 ## 🚀 Key Features
 
-*   **Clause Classification**: Structural interpretation of legal clauses into normalized JSON attributes.
-*   **Deterministic Rule Engine**: Playbook-based compliance checking (Liability, Indemnity, Governing Law, etc.).
-*   **AI Risk Discovery**: Identification of advisory risks (e.g., auto-renewal, vendor assignment) not covered by the playbook.
-*   **Risk Scoring**: Quantitative risk assessment (0-100) based on severity of violations.
-*   **Template-Based Redlining**: Context-aware redline suggestions grounded in legal playbook templates.
-*   **Negotiation Tracking**: Long-term memory of accepted redlines and negotiated positions using Vector Search (ChromaDB).
+*   **Intelligent Document Registry**: High-density contract inventory with multi-dimensional risk filtering.
+*   **AI Redlining Workbench**: Split-pane interface for side-by-side comparison of original clauses and AI-generated redlines.
+*   **Deterministic Rule Engine**: Playbook-based compliance checking grounded in institutional standards.
+*   **Advisory Risk Discovery**: Identification of subtle legal risks (auto-renewals, non-competes, etc.) beyond standard playbooks.
+*   **RAG-Powered Legal Assistant**: Context-aware chat interface for querying the entire contract corpus.
+*   **Compliance Engine**: Real-time visual tracking of portfolio health and alignment with legal protocols.
 
 ## 🛠 Architecture
 
-The pipeline follows a strict, modular flow:
-1. **ContractLoader**: Section-based document processing.
-2. **ClauseClassifier**: Extraction and attribute mapping.
-3. **PlaybookRuleEngine**: Deterministic compliance evaluation.
-4. **RiskScorer**: Quantitative scoring logic.
-5. **AIRiskDiscovery**: Advisory risk detection.
-6. **CrewAI Reasoning**: Agentic synthesis and redline generation.
-7. **ContractMemory**: Persistent storage and historical retrieval.
+The pipeline follows a modular, integrated flow:
+1. **Ingestion Engine**: Multi-format document processing with simulated AI latency for high-precision extraction.
+2. **Clause Classification**: Semantic mapping of legal language into structured metadata.
+3. **Protocol Engine**: Deterministic rule application for automated violation detection.
+4. **Agentic Synthesis**: CrewAI-driven reasoning for complex redline generation.
+5. **Contract Memory**: Long-term historical context using ChromaDB Vector Search.
 
 ## 💻 Tech Stack
 
-*   **Backend**: FastAPI, LiteLLM (Gemini 2.5 Flash), CrewAI
-*   **Database**: ChromaDB (Vector Search), Local JSON Storage (Metadata)
-*   **Frontend**: Next.js (Planned) / Streamlit (Verification UI)
-*   **Intelligence**: Gemini 2.5 Flash
+### Frontend
+- **Framework**: Next.js 15 (App Router)
+- **State Management**: TanStack Query (React Query)
+- **UI Architecture**: Tailwind CSS + Shadcn UI
+- **Design System**: "Institutional Trust" (Navy/Slate/Gold palette)
+
+### Backend
+- **Framework**: FastAPI (Python 3.11+)
+- **LLM Orchestration**: LiteLLM + Gemini 1.5 Pro/Flash
+- **Agentic Logic**: CrewAI
+- **Storage**: ChromaDB (Vector) + Local Persistent Storage
 
 ## 🛠 Getting Started
 
 ### Prerequisites
 *   Python 3.11+
+*   Node.js 20+
 *   Gemini API Key
 
 ### Installation
-1. Clone the repository:
+
+1. **Clone the repository**:
    ```bash
-   git clone https://github.com/MuhibAlMuntakim/LexForge.git
-   cd LexForge
+   git clone https://github.com/MuhibAlMuntakim/Lexforge.git
+   cd Lexforge
    ```
-2. Set up a virtual environment:
+
+2. **Backend Setup**:
    ```bash
    python -m venv venv
    source venv/bin/activate  # Windows: venv\Scripts\activate
-   ```
-3. Install dependencies:
-   ```bash
    pip install -r requirements.txt
    ```
-4. Configure environment variables:
-   Create a `.env` file based on `.env.example`:
+
+3. **Frontend Setup**:
+   ```bash
+   cd frontend
+   npm install
+   ```
+
+4. **Environment Variables**:
+   Create a `.env` file in the root directory:
    ```env
-   GEMINI_API_KEY=your_api_key_here
+   GEMINI_API_KEY=your_api_key
    CHROMA_DB_PATH=data/chroma_db
    ```
 
 ### Running the System
-**Backend:**
-```bash
-uvicorn src.legal_contract_ai.api.main:app --host 0.0.0.0 --port 8000 --reload
-```
 
-**Streamlit UI (Verification):**
-```bash
-streamlit run frontend/streamlit_app.py
-```
+**Development Mode (Full Stack):**
+
+1. **Start Backend**:
+   ```bash
+   # From root
+   uvicorn src.legal_contract_ai.api.main:app --reload --port 8000
+   ```
+
+2. **Start Frontend**:
+   ```bash
+   # From frontend directory
+   npm run dev
+   ```
 
 ## ⚖️ License
-Internal Use / Proprietary (Update as needed)
+Internal Use / Proprietary
