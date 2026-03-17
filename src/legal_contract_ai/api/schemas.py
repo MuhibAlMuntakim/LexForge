@@ -48,7 +48,14 @@ class ReviewResponse(BaseModel):
     playbook_version: str
     requires_manual_review: bool
 
-class ContractHistoryItem(BaseModel):
-    contract_id: str
-    company_id: str
-    timestamp: str
+class ChatHistoryItem(BaseModel):
+    role: str
+    content: str
+
+class ChatRequest(BaseModel):
+    query: str
+    history: Optional[List[ChatHistoryItem]] = []
+
+class ChatResponse(BaseModel):
+    answer: str
+    context_used: List[Dict[str, Any]]

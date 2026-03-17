@@ -17,3 +17,6 @@ dist/
 build/
 .DS_Store
 *.log
+test_rag_direct.py
+frontend/lint_output.txt
+data/vector_store/

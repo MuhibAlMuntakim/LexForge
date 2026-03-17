@@ -1,26 +1,25 @@
-import chromadb
-from chromadb.utils import embedding_functions
 import os
+from typing import List, Dict, Any, Optional
 from dotenv import load_dotenv
-from typing import List, Dict, Any
+
+from langchain_chroma import Chroma
+from langchain_huggingface import HuggingFaceEmbeddings
 
 load_dotenv()
 
 class ClauseVectorSearch:
-    """Manages clause embeddings and semantic retrieval using ChromaDB."""
+    """Manages clause embeddings and semantic retrieval using LangChain's Chroma wrapper."""
     
     def __init__(self, collection_name: str = "contract_clauses"):
         self.db_path = os.getenv("CHROMA_DB_PATH", "./data/vector_store")
-        self.client = chromadb.PersistentClient(path=self.db_path)
         
-        # Use a fast and reliable embedding model
-        self.embedding_fn = embedding_functions.SentenceTransformerEmbeddingFunction(
-            model_name="all-MiniLM-L6-v2"
-        )
+        # Consistent with original LiteLLM/Chroma setup
+        self.embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
         
-        self.collection = self.client.get_or_create_collection(
-            name=collection_name,
-            embedding_function=self.embedding_fn
+        self.vectorstore = Chroma(
+            collection_name=collection_name,
+            embedding_function=self.embeddings,
+            persist_directory=self.db_path
         )
 
     def add_clauses(self, contract_id: str, company_id: str, clauses: Dict[str, str]):
@@ -40,8 +39,8 @@ class ClauseVectorSearch:
                 ids.append(f"{contract_id}_{clause_type}")
         
         if documents:
-            self.collection.add(
-                documents=documents,
+            self.vectorstore.add_texts(
+                texts=documents,
                 metadatas=metadatas,
                 ids=ids
             )
@@ -53,8 +52,8 @@ class ClauseVectorSearch:
         
         doc_id = f"neg_{company_id}_{clause_type}_{timestamp}"
         
-        self.collection.add(
-            documents=[negotiated],
+        self.vectorstore.add_texts(
+            texts=[negotiated],
             metadatas=[{
                 "company_id": company_id,
                 "clause_type": clause_type,
@@ -67,27 +66,28 @@ class ClauseVectorSearch:
             ids=[doc_id]
         )
 
-    def search_similar_clauses(self, query_text: str, clause_type: str = None, n_results: int = 3) -> List[Dict[str, Any]]:
-        """Searches for semantically similar clauses."""
-        where = {}
+    def search_similar_clauses(self, query_text: str, contract_id: str = None, clause_type: str = None, n_results: int = 5) -> List[Dict[str, Any]]:
+        """Searches for semantically similar clauses with filters using LangChain's Chroma query."""
+        filter_dict = {}
+        if contract_id:
+            filter_dict["contract_id"] = contract_id
         if clause_type:
-            where["clause_type"] = clause_type
+            filter_dict["clause_type"] = clause_type
             
-        results = self.collection.query(
-            query_texts=[query_text],
-            n_results=n_results,
-            where=where if where else None
+        results = self.vectorstore.similarity_search_with_score(
+            query=query_text,
+            k=n_results,
+            filter=filter_dict if filter_dict else None
         )
         
-        # Format results
+        # Format results to match previous interface
         hits = []
-        if results["documents"]:
-            for i in range(len(results["documents"][0])):
-                hits.append({
-                    "text": results["documents"][0][i],
-                    "metadata": results["metadatas"][0][i],
-                    "distance": results["distances"][0][i]
-                })
+        for doc, score in results:
+            hits.append({
+                "text": doc.page_content,
+                "metadata": doc.metadata,
+                "distance": score # Chroma score is distance
+            })
         return hits
 
     def search_negotiation_history(self, query_text: str, clause_type: str = None, n_results: int = 3) -> List[Dict[str, Any]]:

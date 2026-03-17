@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>LexForge Premium AI Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#FF7043",
+                        "slate-risk": "#475569",
+                        "gold-risk": "#B8860B",
+                        "background-light": "#F8FAFC",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "8px",
+                        "lg": "8px",
+                        "xl": "8px",
+                    },
+                    boxShadow: {
+                        'premium': '0 2px 4px 0 rgba(0, 0, 0, 0.02), 0 10px 15px -3px rgba(0, 0, 0, 0.03), 0 4px 6px -2px rgba(0, 0, 0, 0.02)',
+                        'inner-soft': 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.06)',
+                    }
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        @layer utilities {
+            .premium-card {
+                @apply bg-white border border-[#E2E8F0] shadow-premium transition-all duration-300;
+            }
+            .inner-shadow-donut {
+                box-shadow: inset 0 2px 8px rgba(0,0,0,0.08);
+            }
+        }
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-background-light text-slate-900 font-display">
+<div class="flex h-screen overflow-hidden">
+<aside class="w-16 flex flex-col items-center py-6 bg-white border-r border-slate-200 z-20 shrink-0">
+<div class="mb-10 text-primary">
+<span class="material-symbols-outlined text-4xl font-bold">emergency</span>
+</div>
+<nav class="flex flex-col gap-8">
+<button class="text-primary">
+<span class="material-symbols-outlined text-[28px] fill-1">dashboard</span>
+</button>
+<button class="text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[28px]">description</span>
+</button>
+<button class="text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[28px]">menu_book</span>
+</button>
+<button class="text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[28px]">analytics</span>
+</button>
+<button class="text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[28px]">settings</span>
+</button>
+</nav>
+<div class="mt-auto">
+<div class="size-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center overflow-hidden">
+<img alt="Profile" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCpiGccep3557kM_cyy-9Z0cvGpFMI2dQTjbROpuayA8o2-SQXurRips3C1MnLrcROoHdKS5I6Vzr3W5tFrq8oyK6svXY-sRWkjAyfnMsxGpJbhsGvaJfxAbKvaKLmFSzuzldk3NHxHTZxSxJQ1mhMpX03ExK-uwR7dkwTW5m0IG0XrHLYGA6lsYLYvU5mpD8RbSGLHANlyUMIfYVh5QzLj4imRSc-PWWPIc3O2qIhRZWuVlGFuo2JvclDchniNlSJWAA1Oa7DLlCGn"/>
+</div>
+</div>
+</aside>
+<div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+<header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 shrink-0 z-10">
+<div class="flex items-center gap-4">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
+<input class="pl-10 pr-4 py-2 bg-slate-50 border-slate-200 rounded text-xs w-80 focus:ring-primary focus:border-primary border transition-all" placeholder="Search institutional database..." type="text"/>
+</div>
+</div>
+<button class="bg-primary text-white px-5 py-2 rounded text-xs font-bold hover:bg-[#E65B2E] transition-all flex items-center gap-2 shadow-sm uppercase tracking-wider">
+<span class="material-symbols-outlined text-sm">add</span>
+                    Add Contract
+                </button>
+</header>
+<main class="flex-1 overflow-y-auto p-8 flex gap-8">
+<div class="flex-1 space-y-8 min-w-0">
+<div class="flex flex-col gap-1">
+<h1 class="text-3xl font-light text-slate-900 tracking-tight">Portfolio Overview</h1>
+<p class="text-slate-400 text-[11px] font-bold uppercase tracking-[0.15em]">Institutional Legal Intelligence</p>
+</div>
+<div class="grid grid-cols-4 gap-6 items-stretch">
+<div class="premium-card p-6 h-48 flex flex-col justify-between group">
+<div class="flex justify-between items-start">
+<span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Assets</span>
+<span class="text-green-500 text-[10px] font-bold">+12.4%</span>
+</div>
+<div class="flex items-end justify-between">
+<span class="text-8xl font-thin text-slate-900 leading-none tracking-tighter">76</span>
+<div class="w-16 h-8 opacity-30 group-hover:opacity-100 transition-opacity">
+<svg class="w-full h-full" viewBox="0 0 100 40">
+<path d="M0 40 Q 25 30, 50 35 T 100 10" fill="none" stroke="#FF7043" stroke-width="1.5"></path>
+</svg>
+</div>
+</div>
+</div>
+<div class="premium-card p-6 h-48 flex flex-col justify-between group">
+<div class="flex justify-between items-start">
+<span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Pending Review</span>
+<span class="text-green-500 text-[10px] font-bold">+5.1%</span>
+</div>
+<div class="flex items-end justify-between">
+<span class="text-8xl font-thin text-slate-900 leading-none tracking-tighter">12</span>
+<div class="w-16 h-8 opacity-30 group-hover:opacity-100 transition-opacity">
+<svg class="w-full h-full" viewBox="0 0 100 40">
+<path d="M0 20 L 20 25 L 40 15 L 60 30 L 80 10 L 100 25" fill="none" stroke="#FF7043" stroke-width="1.5"></path>
+</svg>
+</div>
+</div>
+</div>
+<div class="premium-card p-6 h-48 flex flex-col justify-between group">
+<div class="flex justify-between items-start">
+<span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Critical Alerts</span>
+<span class="text-red-500 text-[10px] font-bold">-2.3%</span>
+</div>
+<div class="flex items-end justify-between">
+<span class="text-8xl font-thin text-slate-900 leading-none tracking-tighter">35</span>
+<div class="w-16 h-8 opacity-30 group-hover:opacity-100 transition-opacity">
+<svg class="w-full h-full" viewBox="0 0 100 40">
+<path d="M0 5 Q 30 40, 60 20 T 100 35" fill="none" stroke="#FF7043" stroke-width="1.5"></path>
+</svg>
+</div>
+</div>
+</div>
+<div class="premium-card p-6 h-48 flex flex-col justify-between group">
+<div class="flex justify-between items-start">
+<span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Remediated</span>
+<span class="text-green-500 text-[10px] font-bold">+18.0%</span>
+</div>
+<div class="flex items-end justify-between">
+<span class="text-8xl font-thin text-slate-900 leading-none tracking-tighter">29</span>
+<div class="w-16 h-8 opacity-30 group-hover:opacity-100 transition-opacity">
+<svg class="w-full h-full" viewBox="0 0 100 40">
+<path d="M0 35 Q 20 5, 50 25 T 100 5" fill="none" stroke="#FF7043" stroke-width="1.5"></path>
+</svg>
+</div>
+</div>
+</div>
+</div>
+<div class="premium-card overflow-hidden">
+<div class="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-white/50">
+<h3 class="text-base font-semibold text-slate-800">Active Reviews <span class="text-slate-400 font-normal ml-2 tracking-tight">38 pending</span></h3>
+<button class="text-primary text-[11px] font-bold uppercase tracking-widest flex items-center gap-1.5 hover:gap-2 transition-all">
+                                Full Portfolio <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full border-collapse">
+<thead>
+<tr class="bg-slate-50/50">
+<th class="text-left px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Document Registry</th>
+<th class="text-left px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Class</th>
+<th class="text-left px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status</th>
+<th class="text-left px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Weighted Risk</th>
+<th class="text-right px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Latency</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100">
+<tr class="hover:bg-[#F8FAFC] transition-colors cursor-pointer group">
+<td class="px-8 py-6">
+<div class="flex flex-col">
+<span class="text-sm font-semibold text-slate-800 group-hover:text-primary transition-colors">Global Logistics Master Services Agreement</span>
+<span class="text-[10px] font-mono text-slate-400 mt-1">UUID: 9482-LEX-PRIME</span>
+</div>
+</td>
+<td class="px-8 py-6 text-xs text-slate-500 font-medium">MSA / MASTER</td>
+<td class="px-8 py-6">
+<span class="bg-primary/5 text-primary border border-primary/20 px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider">Needs Review</span>
+</td>
+<td class="px-8 py-6">
+<div class="flex items-center gap-3">
+<div class="w-20 h-1 bg-slate-100 rounded-full overflow-hidden">
+<div class="w-3/4 h-full bg-primary shadow-[0_0_8px_rgba(255,112,67,0.4)]"></div>
+</div>
+<span class="text-xs font-bold text-slate-700">74%</span>
+</div>
+</td>
+<td class="px-8 py-6 text-right text-xs text-slate-400 font-mono tracking-tighter">00:02:14</td>
+</tr>
+<tr class="hover:bg-[#F8FAFC] transition-colors cursor-pointer group">
+<td class="px-8 py-6">
+<div class="flex flex-col">
+<span class="text-sm font-semibold text-slate-800 group-hover:text-primary transition-colors">Acme Corp Lease Amendment V2</span>
+<span class="text-[10px] font-mono text-slate-400 mt-1">UUID: 1102-LEX-CORE</span>
+</div>
+</td>
+<td class="px-8 py-6 text-xs text-slate-500 font-medium">LEASE / ADDENDUM</td>
+<td class="px-8 py-6">
+<span class="bg-slate-100 text-slate-500 border border-slate-200 px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider">Processing</span>
+</td>
+<td class="px-8 py-6">
+<div class="flex items-center gap-3">
+<div class="w-20 h-1 bg-slate-100 rounded-full overflow-hidden">
+<div class="w-1/4 h-full bg-slate-400"></div>
+</div>
+<span class="text-xs font-bold text-slate-700">12%</span>
+</div>
+</td>
+<td class="px-8 py-6 text-right text-xs text-slate-400 font-mono tracking-tighter">00:15:33</td>
+</tr>
+<tr class="hover:bg-[#F8FAFC] transition-colors cursor-pointer group">
+<td class="px-8 py-6">
+<div class="flex flex-col">
+<span class="text-sm font-semibold text-slate-800 group-hover:text-primary transition-colors">Partner Referral Program NDA</span>
+<span class="text-[10px] font-mono text-slate-400 mt-1">UUID: 4492-LEX-SAFE</span>
+</div>
+</td>
+<td class="px-8 py-6 text-xs text-slate-500 font-medium">NDA / PRIVACY</td>
+<td class="px-8 py-6">
+<span class="bg-green-50 text-green-600 border border-green-100 px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider">Approved</span>
+</td>
+<td class="px-8 py-6">
+<div class="flex items-center gap-3">
+<div class="w-20 h-1 bg-slate-100 rounded-full overflow-hidden">
+<div class="w-0 h-full bg-green-500"></div>
+</div>
+<span class="text-xs font-bold text-slate-700">0%</span>
+</div>
+</td>
+<td class="px-8 py-6 text-right text-xs text-slate-400 font-mono tracking-tighter">01:04:12</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<aside class="w-80 flex flex-col gap-[32px] shrink-0">
+<div class="premium-card p-8 flex flex-col items-center relative overflow-hidden h-[540px]">
+<div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-slate-risk to-gold-risk opacity-50"></div>
+<h3 class="text-[11px] font-bold text-slate-400 mb-8 self-start uppercase tracking-[0.2em]">Risk Distribution</h3>
+<div class="flex-1 flex flex-col items-center justify-center w-full">
+<div class="relative size-56 flex items-center justify-center">
+<div class="absolute inset-0 rounded-full inner-shadow-donut z-0"></div>
+<svg class="w-full h-full -rotate-90 relative z-10" viewBox="0 0 100 100">
+<circle class="opacity-10" cx="50" cy="50" fill="none" r="42" stroke="#B8860B" stroke-dasharray="264" stroke-dashoffset="0" stroke-linecap="butt" stroke-width="4"></circle>
+<circle cx="50" cy="50" fill="none" r="38" stroke="#F1F5F9" stroke-width="6"></circle>
+<circle cx="50" cy="50" fill="none" r="38" stroke="#FF7043" stroke-dasharray="4,2" stroke-dashoffset="0" stroke-width="8"></circle>
+<circle cx="50" cy="50" fill="none" r="38" stroke="#475569" stroke-dasharray="4,2" stroke-dashoffset="-95.5" stroke-width="8"></circle>
+<circle cx="50" cy="50" fill="none" r="38" stroke="#B8860B" stroke-dasharray="4,2" stroke-dashoffset="-179" stroke-width="8"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+<span class="text-5xl font-extralight text-slate-900 tracking-tighter">57</span>
+<span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Violations</span>
+</div>
+</div>
+</div>
+<div class="mt-8 w-full space-y-4 shrink-0">
+<div class="flex justify-between items-center text-[10px] uppercase tracking-widest font-bold">
+<span class="flex items-center gap-3 text-slate-500"><span class="size-2 rounded-full bg-primary shadow-sm"></span> High Risk</span>
+<span class="text-slate-900">24</span>
+</div>
+<div class="flex justify-between items-center text-[10px] uppercase tracking-widest font-bold">
+<span class="flex items-center gap-3 text-slate-500"><span class="size-2 rounded-full bg-slate-risk shadow-sm"></span> Moderate</span>
+<span class="text-slate-900">33</span>
+</div>
+<div class="flex justify-between items-center text-[10px] uppercase tracking-widest font-bold">
+<span class="flex items-center gap-3 text-slate-500"><span class="size-2 rounded-full bg-gold-risk shadow-sm"></span> Advisory</span>
+<span class="text-slate-900">12</span>
+</div>
+</div>
+</div>
+<div class="premium-card p-8 group h-auto">
+<div class="flex justify-between items-start mb-2">
+<h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Volatility Index</h3>
+<span class="text-green-500 text-[10px] font-bold flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[10px] font-bold">arrow_upward</span>
+                                24.8%
+                            </span>
+</div>
+<p class="text-3xl font-light text-slate-900 tracking-tight mb-8">Indemnity</p>
+<div class="flex items-end gap-2 h-24">
+<div class="flex-1 bg-slate-100 rounded-t-sm h-[40%] group-hover:h-[45%] transition-all duration-500"></div>
+<div class="flex-1 bg-slate-100 rounded-t-sm h-[60%] group-hover:h-[65%] transition-all duration-500"></div>
+<div class="flex-1 bg-slate-100 rounded-t-sm h-[55%] group-hover:h-[50%] transition-all duration-500"></div>
+<div class="flex-1 bg-slate-100 rounded-t-sm h-[80%] group-hover:h-[85%] transition-all duration-500"></div>
+<div class="flex-1 bg-slate-100 rounded-t-sm h-[70%] group-hover:h-[75%] transition-all duration-500"></div>
+<div class="flex-1 bg-primary rounded-t-sm h-full shadow-[0_4px_12px_rgba(255,112,67,0.3)]"></div>
+</div>
+<div class="mt-4 flex justify-between text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em]">
+<span>Cycle Start</span>
+<span>Current</span>
+</div>
+</div>
+<div class="bg-slate-900 p-8 rounded shadow-premium border border-slate-800">
+<div class="size-10 rounded bg-primary flex items-center justify-center text-white mb-6 shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-xl">auto_awesome</span>
+</div>
+<h4 class="text-xs font-bold text-white mb-2 uppercase tracking-widest">Protocol Recommendation</h4>
+<p class="text-[11px] text-slate-400 leading-relaxed mb-6 font-medium">Update Playbook Clause 4.2: Integrate revised arbitration thresholds for EU compliance.</p>
+<button class="w-full py-2.5 bg-primary text-white text-[10px] font-bold rounded hover:bg-[#E65B2E] transition-all uppercase tracking-[0.2em] shadow-lg shadow-primary/10">Execute Update</button>
+</div>
+</aside>
+</main>
+</div>
+</div>
+
+</body></html>

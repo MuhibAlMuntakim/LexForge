@@ -10,6 +10,10 @@ python-docx
 pydantic
 python-dotenv
 tiktoken
+langchain
+langchain-google-genai
+langchain-chroma
+langchain-huggingface
 langchain-community
 sentence-transformers
 litellm

@@ -136,6 +136,7 @@ class ContractPipeline:
             "violations": violations,
             "ai_observations": observations,
             "clause_classification": structured_clauses,
+            "raw_clauses": raw_clauses,
             "redlines": redlines,
             "playbook_version": self.playbook.version,
             "requires_manual_review": full_classification.get("requires_manual_review", False)

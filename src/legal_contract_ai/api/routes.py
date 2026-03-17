@@ -1,14 +1,19 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException
 import shutil
 import os
-from typing import List
-from src.legal_contract_ai.api.schemas import ReviewResponse, ReviewRequest, ContractHistoryItem
+import logging
+from typing import List, Dict, Any
+from src.legal_contract_ai.api.schemas import ReviewResponse, ReviewRequest, ContractHistoryItem, ChatRequest, ChatResponse
 from src.legal_contract_ai.core.contract_pipeline import ContractPipeline
 from src.legal_contract_ai.core.contract_memory import ContractMemory
+from src.legal_contract_ai.core.contract_rag import ContractRAG
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 pipeline = ContractPipeline()
 memory = ContractMemory()
+rag = ContractRAG()
 
 UPLOAD_DIR = "data/uploaded_contracts"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
@@ -80,3 +85,19 @@ async def get_contract_redlines(contract_id: str):
     if not data:
         raise HTTPException(status_code=404, detail="Analysis not found")
     return {"redlines": data.get("redlines")}
+
+@router.post("/contracts/{contract_id}/chat", response_model=ChatResponse)
+async def chat_with_contract(contract_id: str, request: ChatRequest):
+    # Verify contract exists
+    data = memory.get_analysis(contract_id)
+    if not data:
+        raise HTTPException(status_code=404, detail="Contract analysis not found. Please analyze the contract first.")
+    
+    # Convert history to simple list of dicts for RAG tool
+    history = [{"role": item.role, "content": item.content} for item in request.history]
+    
+    try:
+        result = rag.generate_chat_response(contract_id, request.query, history)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

@@ -8,7 +8,7 @@ class ContractMemory:
     
     def __init__(self, storage_dir: str = "data/contracts"):
         self.storage_dir = storage_dir
-        self.vector_search = ClauseVectorSearch(collection_name="contract_history")
+        self.vector_search = ClauseVectorSearch(collection_name="contract_clauses")
         os.makedirs(self.storage_dir, exist_ok=True)
 
     def save_analysis(self, contract_id: str, company_id: str, analysis: Dict[str, Any]):
@@ -18,11 +18,12 @@ class ContractMemory:
             json.dump(analysis, f, indent=4)
         
         # 1. Store extracted clauses for general context
-        if "clause_classification" in analysis:
+        raw_clauses = analysis.get("raw_clauses") or analysis.get("key_terms")
+        if raw_clauses:
             self.vector_search.add_clauses(
                 contract_id=contract_id,
                 company_id=company_id,
-                clauses=analysis.get("key_terms", {}) # raw text
+                clauses=raw_clauses
             )
             
         # 2. Store redlines in negotiation history
