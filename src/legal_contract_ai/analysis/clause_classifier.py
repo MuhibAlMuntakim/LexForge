@@ -57,23 +57,34 @@ class ClauseClassifier:
               "exists": boolean,
               "cap_type": "annual_value | 12_months_fees | unlimited | unknown",
               "is_unlimited": boolean,
+              "liability_scope": "mutual | customer_only | vendor_only | unknown",
+              "unlimited_exposure_reasons": ["string"],
+              "has_consequential_damage_disclaimer": boolean,
               "confidence_score": float
             }},
             "indemnity": {{
               "exists": boolean,
               "type": "mutual | customer_only | vendor_only | unknown",
+              "scope_symmetry": "symmetric | one_sided | unknown",
+              "vendor_indemnity_covers_data_claims": boolean,
+              "customer_indemnity_covers_data_claims": boolean,
               "confidence_score": float
             }},
             "termination": {{
               "exists": boolean,
               "customer_convenience": boolean,
               "vendor_convenience": boolean,
+              "termination_fee_percent": number or null,
+              "has_early_termination_penalty": boolean,
+              "notice_days": integer or null,
               "confidence_score": float
             }},
             "confidentiality": {{
               "exists": boolean,
               "mutual": boolean,
               "survival_years": integer or null,
+              "allows_vendor_model_training": boolean,
+              "allows_vendor_aggregated_reuse": boolean,
               "confidence_score": float
             }},
             "payment_terms": {{
@@ -86,9 +97,18 @@ class ClauseClassifier:
               "state": "string or unknown",
               "confidence_score": float
             }}
+          }},
+          "cross_clause_signals": {{
+            "vendor_data_use_rights": "none | aggregated_only | broad_internal_use | model_training | unknown",
+            "confidence_score": float
           }}
         }}
         
+        Use conservative defaults when unclear:
+        - booleans default to false
+        - lists default to []
+        - numeric values default to null
+
         Return ONLY the raw JSON object.
         """
         

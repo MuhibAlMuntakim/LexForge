@@ -1,9 +1,16 @@
 venv/
 .env
+.env.local
+.env.production
+.env.*
+.env*.local
+!.env.example
+!frontend/.env.example
 __pycache__/
 *.pyc
 data/uploaded_contracts/*
 data/contracts/*.json
+data/playbooks/custom/
 data/chroma_db/*
 .gemini/
 .agents/
@@ -17,6 +24,17 @@ dist/
 build/
 .DS_Store
 *.log
-test_rag_direct.py
-frontend/lint_output.txt
+
+# Generated vector stores and local DB artifacts
 data/vector_store/
+
+# Local scratch / probe artifacts
+.tmp_frontend_import/
+.tmp_*
+*_smoke.txt
+check_services.py
+probe_contract.txt
+tmp_review_probe.py
+test_backend.py
+run_backend.ps1
+frontend_backup_*/

@@ -26,6 +26,30 @@ class PlaybookRuleEngine:
         with open(self.playbook_path, 'r') as f:
             return json.load(f)
 
+    def _coerce_number(self, value: Any) -> Optional[float]:
+        try:
+            if value is None:
+                return None
+            return float(value)
+        except (TypeError, ValueError):
+            return None
+
+    def _coerce_bool(self, value: Any) -> bool:
+        if isinstance(value, bool):
+            return value
+        if isinstance(value, str):
+            return value.strip().lower() in {"true", "yes", "1"}
+        if isinstance(value, (int, float)):
+            return bool(value)
+        return False
+
+    def _coerce_list(self, value: Any) -> List[Any]:
+        if value is None:
+            return []
+        if isinstance(value, list):
+            return value
+        return [value]
+
     def check_compliance(self, classification: Dict[str, Any], raw_clauses: Dict[str, str]) -> Dict[str, Any]:
         """
         Evaluates structured attributes from classification against deterministic rules.
@@ -98,6 +122,22 @@ class PlaybookRuleEngine:
                     if current_val not in rule["preferred"]:
                         violated = True
                         v_reason = f"Value '{current_val}' is not in preferred list: {rule['preferred']}"
+
+                elif "disallowed_overlap" in rule:
+                    current_values = {str(x).strip().lower() for x in self._coerce_list(current_val) if x is not None}
+                    blocked_values = {str(x).strip().lower() for x in self._coerce_list(rule.get("disallowed_overlap"))}
+                    overlap = sorted(current_values.intersection(blocked_values))
+                    if overlap:
+                        violated = True
+                        v_reason = f"Contains disallowed values: {overlap}"
+
+                elif "forbidden_values" in rule:
+                    current_values = {str(x).strip().lower() for x in self._coerce_list(current_val) if x is not None}
+                    forbidden_values = {str(x).strip().lower() for x in self._coerce_list(rule.get("forbidden_values"))}
+                    overlap = sorted(current_values.intersection(forbidden_values))
+                    if overlap:
+                        violated = True
+                        v_reason = f"Contains forbidden values: {overlap}"
                 
                 elif "allowed" in rule:
                     if current_val not in rule["allowed"]:
@@ -105,17 +145,29 @@ class PlaybookRuleEngine:
                         v_reason = f"Value '{current_val}' is not in allowed list: {rule['allowed']}"
                 
                 elif "max_val" in rule:
-                    try:
-                        if float(current_val) > float(rule["max_val"]):
-                            violated = True
-                            v_reason = f"Value {current_val} exceeds maximum allowed {rule['max_val']}"
-                    except (ValueError, TypeError):
-                        pass
+                    current_num = self._coerce_number(current_val)
+                    max_num = self._coerce_number(rule.get("max_val"))
+                    if current_num is not None and max_num is not None and current_num > max_num:
+                        violated = True
+                        v_reason = f"Value {current_val} exceeds maximum allowed {rule['max_val']}"
+
+                elif "min_val" in rule:
+                    current_num = self._coerce_number(current_val)
+                    min_num = self._coerce_number(rule.get("min_val"))
+                    if current_num is not None and min_num is not None and current_num < min_num:
+                        violated = True
+                        v_reason = f"Value {current_val} is below minimum required {rule['min_val']}"
                 
                 elif expected is not None:
-                    if current_val != expected:
-                        violated = True
-                        v_reason = f"Value '{current_val}' does not match expected '{expected}'"
+                    # Bool expectation with tolerant coercion avoids string/bool mismatch noise.
+                    if isinstance(expected, bool):
+                        if self._coerce_bool(current_val) != expected:
+                            violated = True
+                            v_reason = f"Value '{current_val}' does not match expected '{expected}'"
+                    else:
+                        if current_val != expected:
+                            violated = True
+                            v_reason = f"Value '{current_val}' does not match expected '{expected}'"
 
             if violated:
                 logger.info(f"Rule {rule_type} found in {clause_type}: {v_reason}")
