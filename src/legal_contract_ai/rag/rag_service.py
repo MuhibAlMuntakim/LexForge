@@ -279,6 +279,7 @@ class RAGService:
         doc_id: Optional[str] = None,
         top_k: int = 6,
         chat_history: Optional[List[Dict[str, str]]] = None,
+        additional_context: Optional[str] = None,
     ) -> Dict[str, Any]:
         docs_with_scores = self._retrieve(
             question=question,
@@ -288,7 +289,38 @@ class RAGService:
             top_k=top_k,
         )
 
+        history = chat_history or []
+        history_str = "\n".join(
+            f"{m.get('role', 'user')}: {m.get('content', '')}" for m in history[-8:]
+        )
+
         if not docs_with_scores:
+            if additional_context and additional_context.strip():
+                chain = self.prompt | self.llm
+                response = chain.invoke(
+                    {
+                        "question": question,
+                        "chat_history": history_str or "(none)",
+                        "context": additional_context,
+                    }
+                )
+
+                return {
+                    "question": question,
+                    "answer": response.content,
+                    "citations": [
+                        {
+                            "chunk_id": "live_review_state",
+                            "doc_id": None,
+                            "filename": "live_contract_state",
+                            "contract_id": contract_id,
+                            "score": None,
+                            "excerpt": additional_context[:400],
+                        }
+                    ],
+                    "grounded": False,
+                }
+
             return {
                 "question": question,
                 "answer": "I could not find enough evidence in the indexed documents to answer that.",
@@ -313,17 +345,28 @@ class RAGService:
                 }
             )
 
-        history = chat_history or []
-        history_str = "\n".join(
-            f"{m.get('role', 'user')}: {m.get('content', '')}" for m in history[-8:]
-        )
+        merged_context = "\n\n".join(context_lines)
+        if additional_context and additional_context.strip():
+            # Authoritative state from latest user actions should be considered first.
+            merged_context = additional_context + "\n\n" + merged_context
+            citations.insert(
+                0,
+                {
+                    "chunk_id": "live_review_state",
+                    "doc_id": None,
+                    "filename": "live_contract_state",
+                    "contract_id": contract_id,
+                    "score": None,
+                    "excerpt": additional_context[:400],
+                },
+            )
 
         chain = self.prompt | self.llm
         response = chain.invoke(
             {
                 "question": question,
                 "chat_history": history_str or "(none)",
-                "context": "\n\n".join(context_lines),
+                "context": merged_context,
             }
         )
 

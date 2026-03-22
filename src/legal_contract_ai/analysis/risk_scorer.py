@@ -1,6 +1,8 @@
 import logging
 from typing import List, Dict, Any
 
+from src.legal_contract_ai.core.violation_utils import deduplicate_violations
+
 logger = logging.getLogger(__name__)
 
 class RiskScorer:
@@ -23,6 +25,15 @@ class RiskScorer:
         """
         logger.info("Calculating risk score...")
         
+        normalized_violations = deduplicate_violations(violations)
+
+        if len(normalized_violations) != len(violations):
+            logger.info(
+                "Risk scorer deduplicated violations from %s to %s.",
+                len(violations),
+                len(normalized_violations),
+            )
+
         total_score = 0
         counts = {
             "high": 0,
@@ -30,7 +41,7 @@ class RiskScorer:
             "low": 0
         }
         
-        for violation in violations:
+        for violation in normalized_violations:
             severity = violation.get("severity", "low").lower()
             if severity in self.weights:
                 total_score += self.weights[severity]

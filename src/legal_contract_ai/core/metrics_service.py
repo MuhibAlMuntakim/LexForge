@@ -29,27 +29,91 @@ class MetricsService:
         items.sort(key=lambda item: item.get("timestamp", ""), reverse=True)
         return items
 
-    def get_dashboard_metrics(self) -> Dict[str, Any]:
-        analyses = self.load_analyses()
+    def get_dashboard_metrics(self, timeframe: str = "all") -> Dict[str, Any]:
+        analyses = self._filter_analyses_by_timeframe(self.load_analyses(), timeframe)
 
-        cards = self._build_cards(analyses)
-        amendment_impact = self._build_amendment_impact(analyses)
-        risk_trend = self._build_risk_trend(analyses, limit=8)
-        violation_distribution = self._build_violation_distribution(analyses, limit=8)
-        recent_contracts = self._build_recent_contracts(analyses, limit=8)
-        ai_insights = self._build_ai_insights(analyses, amendment_impact)
+        # 1. Pending Tasks (Requires manual review OR status is not reviewed/approved/rejected)
+        pending_tasks = 0
+        for doc in analyses:
+            status = self._derive_status(doc)
+            if status in ["pending", "negotiating", "in_review", "under_review"] or doc.get("requires_manual_review"):
+                pending_tasks += 1
+
+        # 2. Hours Saved
+        hours_saved = int(len(analyses) * 2.5)
+
+        # 3. Average Portfolio Risk
+        avg_portfolio_risk = round(self._avg_risk(analyses), 1)
+
+        # 4. Mitigation Rate
+        total_violations = 0
+        resolved_violations = 0
+        for doc in analyses:
+            violations_count = len(doc.get("violations", []))
+            accepted_count = len(doc.get("accepted_redline_indexes", []))
+            total_violations += violations_count
+            # Every accepted redline counts as 1 resolved violation
+            resolved_violations += accepted_count
+
+        mitigation_rate = 0.0
+        if total_violations > 0:
+            mitigation_rate = round((resolved_violations / total_violations) * 100, 1)
+
+        # 5. Portfolio Health
+        health_metrics = {"low": 0, "medium": 0, "high": 0}
+        for doc in analyses:
+            level = str(doc.get("risk_assessment", {}).get("risk_level", "medium")).lower()
+            if level in health_metrics:
+                health_metrics[level] += 1
+            else:
+                health_metrics["medium"] += 1
+
+        # 6. Top Weaknesses
+        weaknesses_count: Counter[str] = Counter()
+        for doc in analyses:
+            for violation in doc.get("violations", []):
+                clause = str(violation.get("clause", "Unknown")).replace("_", " ").title()
+                weaknesses_count[clause] += 1
+
+        top_weaknesses = [
+            {"category": k, "count": v}
+            for k, v in weaknesses_count.most_common(5)
+        ]
+
+        # 7. Attention Required (pending/negotiating OR high risk, limited to top 3 sorted by risk)
+        attention_candidates = []
+        for doc in analyses:
+            status = self._derive_status(doc)
+            risk_score = float(doc.get("risk_assessment", {}).get("risk_score", 0))
+            is_pending_type = status in ["pending", "negotiating", "in_review"] or doc.get("requires_manual_review")
+            is_high_risk = str(doc.get("risk_assessment", {}).get("risk_level", "")).lower() == "high"
+            
+            if is_pending_type or is_high_risk:
+                attention_candidates.append({
+                    "id": doc.get("contract_id", ""),
+                    "vendor": doc.get("company_id", "unknown"),
+                    "risk_score": int(risk_score),
+                    "risk_level": str(doc.get("risk_assessment", {}).get("risk_level", "medium")).lower(),
+                    "status": status,
+                    "updated": doc.get("timestamp", "")
+                })
+        
+        # Sort by risk score descending
+        attention_candidates.sort(key=lambda x: x["risk_score"], reverse=True)
+        attention_required = attention_candidates[:3]
 
         return {
-            **cards,
-            **amendment_impact,
-            "risk_trend": risk_trend,
-            "violation_distribution": violation_distribution,
-            "recent_contracts": recent_contracts,
-            "ai_insights": ai_insights,
+            "pending_tasks": pending_tasks,
+            "hours_saved": hours_saved,
+            "avg_portfolio_risk": avg_portfolio_risk,
+            "mitigation_rate": mitigation_rate,
+            "portfolio_health": health_metrics,
+            "top_weaknesses": top_weaknesses,
+            "attention_required": attention_required,
         }
 
-    def get_analytics_metrics(self) -> Dict[str, Any]:
-        analyses = self.load_analyses()
+    def get_analytics_metrics(self, timeframe: str = "all") -> Dict[str, Any]:
+        analyses = self._filter_analyses_by_timeframe(self.load_analyses(), timeframe)
         return {
             "risk_distribution": self._build_risk_distribution(analyses),
             "violation_frequency": self._build_violation_distribution(analyses, limit=12),
@@ -57,8 +121,8 @@ class MetricsService:
             "contract_volume": self._build_contract_volume(analyses, limit=12),
         }
 
-    def get_negotiations(self) -> List[Dict[str, Any]]:
-        analyses = self.load_analyses()
+    def get_negotiations(self, timeframe: str = "all") -> List[Dict[str, Any]]:
+        analyses = self._filter_analyses_by_timeframe(self.load_analyses(), timeframe)
         rows: List[Dict[str, Any]] = []
 
         for analysis in analyses:
@@ -75,6 +139,34 @@ class MetricsService:
             )
 
         return rows
+
+    def _filter_analyses_by_timeframe(self, analyses: List[Dict[str, Any]], timeframe: str) -> List[Dict[str, Any]]:
+        normalized = str(timeframe or "all").strip().lower()
+        if normalized in {"", "all"}:
+            return analyses
+
+        window_hours = {
+            "24h": 24,
+            "7d": 24 * 7,
+            "30d": 24 * 30,
+            "365d": 24 * 365,
+        }.get(normalized)
+
+        if not window_hours:
+            return analyses
+
+        now = datetime.datetime.now()
+        cutoff = now - datetime.timedelta(hours=window_hours)
+
+        filtered: List[Dict[str, Any]] = []
+        for item in analyses:
+            ts = self._parse_ts(item.get("timestamp"))
+            if not ts:
+                continue
+            if ts >= cutoff:
+                filtered.append(item)
+
+        return filtered
 
     def _build_cards(self, analyses: List[Dict[str, Any]]) -> Dict[str, Any]:
         current_month, previous_month = self._split_current_previous_month(analyses)

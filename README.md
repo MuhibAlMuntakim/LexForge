@@ -67,6 +67,14 @@ The pipeline follows a modular, integrated flow:
    ```env
    GEMINI_API_KEY=your_api_key
    CHROMA_DB_PATH=data/chroma_db
+   INTERNAL_API_KEY=your_secure_api_key_here
+   ```
+
+5. Configure frontend environment variables:
+   Create `frontend/.env` from `frontend/.env.example`:
+   ```env
+   VITE_API_BASE_URL=http://127.0.0.1:8000/api/v1
+   VITE_API_KEY=your_secure_api_key_here
    ```
 
 ### Running the System

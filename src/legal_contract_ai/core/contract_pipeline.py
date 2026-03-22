@@ -13,6 +13,7 @@ from src.legal_contract_ai.analysis.ai_risk_discovery import AiRiskDiscovery
 from src.legal_contract_ai.analysis.risk_scorer import RiskScorer
 from src.legal_contract_ai.core.playbook_rule_engine import PlaybookRuleEngine
 from src.legal_contract_ai.core.contract_memory import ContractMemory
+from src.legal_contract_ai.core.violation_utils import deduplicate_violations
 from src.legal_contract_ai.crew.crew import LegalContractCrew
 
 # Set up logging
@@ -79,7 +80,7 @@ class ContractPipeline:
         stage_start = time.perf_counter()
         compliance = playbook_engine.check_compliance(full_classification, raw_clauses)
         stage_timings["playbook_check"] = round(time.perf_counter() - stage_start, 4)
-        violations = compliance["violations"]
+        violations = deduplicate_violations(compliance["violations"])
         
         # 5. Risk Scoring
         logger.info(f"[{contract_id}] Generating risk score...")
@@ -149,6 +150,7 @@ class ContractPipeline:
 
         # Normalize crew/deterministic redlines and force a concrete suggestion for each.
         redlines = self._ensure_redline_suggestions(redlines, violations)
+        redlines = self._deduplicate_redlines(redlines)
         stage_timings["fallback_redlines"] = round(time.perf_counter() - stage_start, 4)
 
         end_time = datetime.datetime.now()
@@ -264,6 +266,80 @@ class ContractPipeline:
     def _normalize_space(self, text: str) -> str:
         return re.sub(r"\s+", " ", str(text or "")).strip()
 
+    def _is_placeholder_suggestion(self, text: str) -> bool:
+        normalized = self._normalize_space(text).lower()
+        if not normalized:
+            return True
+        return normalized in {
+            "null",
+            "none",
+            "n/a",
+            "na",
+            "nil",
+            "undefined",
+            "not available",
+            "not applicable",
+        }
+
+    def _sanitize_suggested_redline(self, text: str) -> str:
+        cleaned = str(text or "").strip()
+        if not cleaned:
+            return ""
+
+        # Strip fenced code wrappers if the model returns markdown blocks.
+        cleaned = re.sub(r"^```[a-zA-Z]*\s*", "", cleaned)
+        cleaned = re.sub(r"\s*```$", "", cleaned)
+
+        # Drop citation/source tails so accepted redlines remain pure clause text.
+        cleaned = re.sub(r"\n\s*(source|sources|citation|citations)\s*:[\s\S]*$", "", cleaned, flags=re.IGNORECASE)
+        cleaned = re.sub(r"\s+(source|sources|citation|citations)\s*:\s*.*$", "", cleaned, flags=re.IGNORECASE)
+        cleaned = re.sub(r"\s*(\(|\[)?\s*chunks?\s*\d+(?:\s*[-,]\s*\d+)*(\)|\])?\s*$", "", cleaned, flags=re.IGNORECASE)
+        cleaned = re.sub(r"\s*\((?:chunk|chunks)\s*\d+(?:\s*[-,]\s*\d+)*\)\s*$", "", cleaned, flags=re.IGNORECASE)
+        cleaned = re.sub(
+            r"\n+\s*[\(\[]?\s*(?:redline|chunk|remaining\s+violations?|executive\s+summary)\b[\s\S]*$",
+            "",
+            cleaned,
+            flags=re.IGNORECASE,
+        )
+        cleaned = re.sub(
+            r"\s+[\(\[]\s*(?:redline|chunk|remaining\s+violations?|executive\s+summary)\b[\s\S]*$",
+            "",
+            cleaned,
+            flags=re.IGNORECASE,
+        )
+
+        return cleaned.strip().strip('"').strip("'").strip()
+
+    def _deduplicate_redlines(self, redlines: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        if not redlines:
+            return []
+
+        merged: Dict[str, Dict[str, Any]] = {}
+        order: List[str] = []
+
+        for item in redlines:
+            violation = self._normalize_space(item.get("violation", "")).lower()
+            original = self._normalize_space(item.get("original_clause", "")).lower()
+            suggested = self._normalize_space(
+                item.get("suggested_redline") or item.get("suggested_clause") or ""
+            ).lower()
+
+            key = f"{violation}::{original}::{suggested}"
+            if key not in merged:
+                merged[key] = dict(item)
+                order.append(key)
+                continue
+
+            existing_rationale = self._normalize_space(merged[key].get("rationale", ""))
+            new_rationale = self._normalize_space(item.get("rationale", ""))
+            if new_rationale and new_rationale != existing_rationale:
+                if existing_rationale:
+                    merged[key]["rationale"] = f"{existing_rationale} | {new_rationale}"
+                else:
+                    merged[key]["rationale"] = new_rationale
+
+        return [merged[k] for k in order]
+
     def _build_policy_fallback_suggestion(self, violation: Dict[str, Any]) -> str:
         clause = self._normalize_space(violation.get("clause", "")).lower()
         policy = self._normalize_space(violation.get("policy", ""))
@@ -329,9 +405,11 @@ class ContractPipeline:
             violation_clause = self._normalize_space(item.get("violation", "")).lower()
             original_clause = self._normalize_space(item.get("original_clause", ""))
             rationale = self._normalize_space(item.get("rationale", ""))
-            suggested = self._normalize_space(
+            suggested = self._sanitize_suggested_redline(
                 item.get("suggested_redline") or item.get("suggested_clause") or ""
             )
+            if self._is_placeholder_suggestion(suggested):
+                suggested = ""
 
             matched_violation: Optional[Dict[str, Any]] = None
             for v in normalized_violations:
